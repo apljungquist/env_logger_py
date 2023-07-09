@@ -78,7 +78,7 @@ def _style_output() -> bool:
     # But I disagree with the authors on using stderr for logging.
     if not sys.stderr.isatty():
         return False
-    if os.environ.get("NO_COLOR") != "0":
+    if os.environ.get("NO_COLOR", "0") != "0":
         return False
     if os.environ.get("TERM") == "dumb":
         return False
