@@ -73,6 +73,21 @@ def _valid_format(text: Optional[str]) -> Optional[str]:
     return text
 
 
+def _valid_handlers(text: Optional[str]) -> Optional[List[logging.Handler]]:
+    if text is None:
+        return None
+    if text == "rich":
+        try:
+            import rich.logging
+
+            return [rich.logging.RichHandler()]
+        except ImportError as e:
+            raise ValueError(
+                f"Invalid log handler: {text} (install rich to enable this handler)"
+            ) from e
+    raise ValueError(f"Invalid log handler: {text}")
+
+
 def _style_output() -> bool:
     # Inspired by https://clig.dev/#output
     # But I disagree with the authors on using stderr for logging.
@@ -101,7 +116,7 @@ def configure(**kwargs) -> None:
     _resolve(
         kwargs,
         "handlers",
-        lambda: None,
+        lambda: _valid_handlers(os.environ.get("LOG_HANDLER")),
         lambda: [Handler(style_output=_style_output())],
     )
     logging.basicConfig(**kwargs)
