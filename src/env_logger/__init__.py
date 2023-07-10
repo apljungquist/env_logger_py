@@ -64,6 +64,18 @@ def _valid_handlers(text: Optional[str]) -> Optional[List[logging.Handler]]:
     raise ValueError(f"Invalid log handler: {text}")
 
 
+def _default_format() -> str:
+    return "%(asctime)s %(levelname)s %(message)s"
+
+
+def _default_level() -> str:
+    return "INFO"
+
+
+def _default_handlers() -> List[logging.Handler]:
+    return [_handlers.Handler(style_output=_style_output())]
+
+
 def _style_output() -> bool:
     # Inspired by https://clig.dev/#output
     # But I disagree with the authors on using stderr for logging.
@@ -81,19 +93,19 @@ def configure(**kwargs) -> None:
         kwargs,
         "format",
         lambda: _valid_format(os.environ.get("LOG_FORMAT")),
-        lambda: "%(asctime)s %(levelname)s %(message)s",
+        _default_format,
     )
     _resolve(
         kwargs,
         "level",
         lambda: _valid_level(os.environ.get("LOG_LEVEL")),
-        lambda: "INFO",
+        _default_level,
     )
     _resolve(
         kwargs,
         "handlers",
         lambda: _valid_handlers(os.environ.get("LOG_HANDLER")),
-        lambda: [_handlers.Handler(style_output=_style_output())],
+        _default_handlers,
     )
     logging.basicConfig(**kwargs)
 
@@ -101,9 +113,6 @@ def configure(**kwargs) -> None:
 def _log_samples(logger: logging.Logger) -> None:
     logger.debug("A debug message")
     logger.info("An info message")
-    logger.info(
-        "Another info message. This one contains special characters: \n\t\r\b\f\v\a..."
-    )
     logger.warning("A warning message")
     logger.error("An error message")
     logger.critical("A critical message")
