@@ -5,24 +5,46 @@ import json
 import logging
 import os
 import sys
-from typing import Optional, List, Callable, Any, Dict
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Optional, List, Callable, Any, Dict, Iterable, Self, Tuple
 
 import colorama
 
 logger = logging.getLogger(__name__)
 
-STYLES = {
-    logging.DEBUG: colorama.Fore.RESET + colorama.Style.DIM,
-    logging.INFO: colorama.Fore.RESET + colorama.Style.NORMAL,
-    logging.WARNING: colorama.Fore.YELLOW + colorama.Style.NORMAL,
-    logging.ERROR: colorama.Fore.RED + colorama.Style.NORMAL,
-    logging.CRITICAL: colorama.Fore.RED + colorama.Style.BRIGHT,
-}
+
+class ColorMap:
+    @classmethod
+    def dim_to_bright(cls) -> Self:
+        return cls(
+            [
+                (logging.DEBUG, colorama.Style.DIM),
+                (logging.INFO, colorama.Style.NORMAL),
+                (logging.WARNING, colorama.Style.NORMAL + colorama.Fore.YELLOW),
+                (logging.ERROR, colorama.Style.NORMAL + colorama.Fore.RED),
+                (logging.CRITICAL, colorama.Style.BRIGHT + colorama.Fore.RED),
+            ]
+        )
+
+    def __init__(self, styles: Iterable[Tuple[int, str]]) -> None:
+        self._styles = list(styles)
+
+    def color(self, level: int) -> str:
+        for l, s in self._styles:
+            if level <= l:
+                return s
+        return ""
+
+    def colored(self, level: int, text: str) -> str:
+        return self.color(level) + text + colorama.Style.RESET_ALL
 
 
 class Handler(logging.StreamHandler):
     def __init__(self, *args, **kwargs) -> None:
-        self.style_output = kwargs.pop("style_output", True)
+        self._style_output = kwargs.pop("style_output", True)
+        self._color_map = ColorMap.dim_to_bright()
         super().__init__(*args, **kwargs)
 
     def format(self, record: logging.LogRecord) -> str:
@@ -31,8 +53,8 @@ class Handler(logging.StreamHandler):
         escaped = json.dumps(default)[1:-1]
         # TODO: Consider styling unnamed levels
         colored = (
-            STYLES.get(record.levelno, "") + escaped + colorama.Style.RESET_ALL
-            if self.style_output
+            self._color_map.colored(record.levelno, escaped)
+            if self._style_output
             else escaped
         )
         return colored
@@ -78,7 +100,7 @@ def _valid_handlers(text: Optional[str]) -> Optional[List[logging.Handler]]:
         return None
     if text == "rich":
         try:
-            import rich.logging
+            import rich.logging  # type: ignore
 
             return [rich.logging.RichHandler()]
         except ImportError as e:
