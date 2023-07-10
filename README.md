@@ -30,7 +30,3 @@ import rich.logging
 env_logger.configure(handlers=[rich.logging.RichHandler()])
 logging.getLogger(__name__).info("Hello!")
 ```
-
-The reason why `rich` not used by default is because it defaults to
-* writing to `stdout` instead of `stderr`
-* always printing colors.
