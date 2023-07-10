@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import logging
 import os
@@ -25,6 +26,30 @@ class ColorMap:
                 (logging.WARNING, colorama.Style.NORMAL + colorama.Fore.YELLOW),
                 (logging.ERROR, colorama.Style.NORMAL + colorama.Fore.RED),
                 (logging.CRITICAL, colorama.Style.BRIGHT + colorama.Fore.RED),
+            ]
+        )
+
+    @classmethod
+    def dim_to_back(cls) -> Self:
+        return cls(
+            [
+                (logging.DEBUG, colorama.Style.DIM),
+                (logging.INFO, colorama.Style.BRIGHT),
+                (logging.WARNING, colorama.Style.BRIGHT + colorama.Fore.YELLOW),
+                (logging.ERROR, colorama.Style.BRIGHT + colorama.Fore.RED),
+                (
+                    logging.CRITICAL,
+                    colorama.Style.BRIGHT + colorama.Fore.WHITE + colorama.Back.RED,
+                ),
+            ]
+        )
+
+    @classmethod
+    def dim_or_normal(cls) -> Self:
+        return cls(
+            [
+                (logging.DEBUG, colorama.Style.DIM),
+                (logging.CRITICAL, colorama.Style.NORMAL),
             ]
         )
 
@@ -58,6 +83,58 @@ class Handler(logging.StreamHandler):
             else escaped
         )
         return colored
+
+
+def _without_exc_info(record: logging.LogRecord) -> logging.LogRecord:
+    record = copy.copy(record)
+    record.exc_info = None
+    return record
+
+
+class SparseColorFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs) -> None:
+        fmt: str = kwargs.pop("fmt")
+        left, middle, right = fmt.rpartition("%(levelname)s")
+
+        kwargs["fmt"] = left  # makes mypy happy
+        self._left = logging.Formatter(*args, **kwargs) if left else None
+        self._middle = middle
+        kwargs["fmt"] = right
+        self._right = logging.Formatter(*args, **kwargs)
+
+        self._level_color_map = ColorMap.dim_to_back()
+        self._other_color_map = ColorMap.dim_or_normal()
+        super().__init__(*args, **kwargs)
+
+    def format(self, record: logging.LogRecord) -> str:
+        level_style = self._level_color_map.color(record.levelno)
+        other_style = self._other_color_map.color(record.levelno)
+        record_without_exc_info = _without_exc_info(record)
+        # TODO: Consider optimizing
+        return str(
+            (
+                other_style
+                + (
+                    json.dumps(self._left.format(record_without_exc_info))[1:-1]
+                    if self._left
+                    else ""
+                )
+                + colorama.Style.RESET_ALL
+                + level_style
+                + (record.levelname if self._middle else "")
+                + colorama.Style.RESET_ALL
+                + other_style
+                + (json.dumps(self._right.format(record))[1:-1])
+                + colorama.Style.RESET_ALL
+            )
+        )
+
+
+class SparseColorHandler(logging.StreamHandler):
+    def setFormatter(self, fmt: Optional[logging.Formatter]) -> None:
+        if fmt is not None:
+            fmt = SparseColorFormatter(fmt=fmt._fmt)
+        super().setFormatter(fmt)
 
 
 def _resolve(
@@ -107,6 +184,8 @@ def _valid_handlers(text: Optional[str]) -> Optional[List[logging.Handler]]:
             raise ValueError(
                 f"Invalid log handler: {text} (install rich to enable this handler)"
             ) from e
+    if text == "sparse":
+        return [SparseColorHandler()]
     raise ValueError(f"Invalid log handler: {text}")
 
 
@@ -144,7 +223,7 @@ def configure(**kwargs) -> None:
     logging.basicConfig(**kwargs)
 
 
-def _demo() -> None:
+def _log_samples(logger: logging.Logger) -> None:
     logger.debug("A debug message")
     logger.info("An info message")
     logger.info(
@@ -157,6 +236,10 @@ def _demo() -> None:
         raise Exception("Oops")
     except Exception:
         logger.exception("A exception message")
+
+
+def _demo() -> None:
+    _log_samples(logger)
 
 
 def _parser() -> argparse.ArgumentParser:
