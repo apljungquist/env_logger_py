@@ -6,10 +6,10 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from . import _handlers
+from env_logger import _handlers
 
 if TYPE_CHECKING:
-    from typing import Optional, List, Callable, Any, Dict
+    from typing import Any, Callable, Dict, List, Optional
 
 
 def _resolve(
@@ -27,6 +27,16 @@ def _resolve(
 
 
 def _valid_level(text: Optional[str]) -> Optional[str]:
+    """Validate a log level
+
+    >>> _valid_level("INFO")
+    'INFO'
+
+    >>> _valid_level("INVALID")
+    Traceback (most recent call last):
+    ...
+    ValueError: Invalid log level: INVALID
+    """
     if text is None:
         return None
     if text not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
