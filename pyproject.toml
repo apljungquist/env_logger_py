@@ -1,13 +1,13 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.isort]
 profile = "black"
 
 [tool.poetry]
 name = "env_logger"
-version = "0.3.1"
+version = "0.0.0"
 description = "The easy way to configure logging"
 license = "MIT"
 authors = ["AP Ljungquist <ap@ljungquist.eu>"]
@@ -27,8 +27,12 @@ isort = "^5.13.2"
 mkhelp = "^0.2"
 mypy = "^1.8.0"
 poetry = "^1.7.1"
+poetry-dynamic-versioning = "^1.2.0"
 pytest = "^7.1.2"
 rich = "^13.7.0"
 ruff = "^0.1.9"
 types-colorama = "^0.4.15.12"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
