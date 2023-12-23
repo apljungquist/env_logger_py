@@ -11,7 +11,7 @@ if [ ! -d "venv" ]; then
   echo "Creating venv"
   python -m venv --prompt $(basename "${PROJECT_PATH}") venv
   . "venv/bin/activate"
-  pip install pip setuptools
+  pip install -c constraints.txt poetry
 else
   echo "Reusing venv"
   . "venv/bin/activate"

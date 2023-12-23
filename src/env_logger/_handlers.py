@@ -6,7 +6,8 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Optional, Iterable, Self, Tuple
+    from typing import Optional, Iterable, Tuple
+    from typing_extensions import Self
 
 import colorama
 

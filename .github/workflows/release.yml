@@ -1,6 +1,10 @@
 name: Python package
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -8,15 +12,22 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.8"
+      - name: Install poetry
+        run: . ./init_env.sh
       - name: Install dependencies
-        run: pip install poetry==1.5.1
+        run: make sync_env
       - name: Build distributions
         run: poetry build
+      - name: Run checks
+        run: make check_all
       - name: Publish to PyPI
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -11,15 +11,19 @@ authors = ["AP Ljungquist <ap@ljungquist.eu>"]
 readme = "README.md"
 homepage = "https://github.com/apljungquist/env_logger_py"
 
-
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 colorama = "^0.4.6"
-
-[tool.poetry.dev-dependencies]
-black = "^22.6.0"
-pytest = "^7.1.2"
 
 [tool.poetry.scripts]
 env_logger = 'env_logger:_main'
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+isort = "^5.13.2"
+mkhelp = "^0.2"
+mypy = "^1.8.0"
+pytest = "^7.1.2"
+ruff = "^0.1.9"
+types-colorama = "^0.4.15.12"
 
