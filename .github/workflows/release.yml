@@ -24,7 +24,8 @@ jobs:
         run: |
           . ./init_env.sh
           make sync_env
-          make check_all
+      - name: Misc 2
+        run: make check_all
       - name: Install dependencies
         run: pip install -r constraints.txt
       - name: Install package
