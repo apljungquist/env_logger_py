@@ -22,6 +22,8 @@ jobs:
           python-version: "3.8"
       - name: Install dependencies
         run: pip install -r constraints.txt
+      - name: Install package
+        run: pip install --no-deps .
       - name: Run checks
         run: make check_all
       - name: Install poetry
