@@ -20,6 +20,11 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: "3.8"
+      - name: Misc
+        run: |
+          . ./init_env.sh
+          make sync_env
+          make check_all
       - name: Install dependencies
         run: pip install -r constraints.txt
       - name: Install package
