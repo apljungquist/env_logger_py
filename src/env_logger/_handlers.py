@@ -55,9 +55,9 @@ class ColorMap:
         self._styles = list(styles)
 
     def color(self, level: int) -> str:
-        for l, s in self._styles:
-            if level <= l:
-                return s
+        for threshold, style in self._styles:
+            if level <= threshold:
+                return style
         return ""
 
     def colored(self, level: int, text: str) -> str:

@@ -39,7 +39,7 @@ check_format:
 
 ## Run linters for all parts of the project
 check_lint:
-	ruff bin/
+	ruff .
 .PHONY: check_lint
 
 ## Run unit tests for all parts of the project
