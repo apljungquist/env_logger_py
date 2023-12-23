@@ -21,13 +21,11 @@ jobs:
         with:
           python-version: "3.8"
       - name: Install poetry
-        run: . ./init_env.sh
-      - name: Install dependencies
-        run: make sync_env
-      - name: Build distributions
-        run: poetry build
-      - name: Run checks
-        run: make check_all
+        run: |
+          . ./init_env.sh
+          make sync_env
+          make check_all
+          poetry build
       - name: Publish to PyPI
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
