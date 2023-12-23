@@ -23,6 +23,7 @@ from env_logger import _handlers
     [
         _handlers.SparseColorHandler,
         _handlers.Handler,
+        _handlers.RichHandler,
     ],
 )
 def test_handler_accept_formats(
@@ -33,5 +34,23 @@ def test_handler_accept_formats(
     logger = logging.Logger("test")
     logger.addHandler(handler)
 
-    print("", file=handler.stream)
     env_logger._log_samples(logger)
+
+
+@pytest.mark.parametrize(
+    "handler_cls",
+    [
+        _handlers.SparseColorHandler,
+        _handlers.Handler,
+        _handlers.RichHandler,
+    ],
+)
+def test_handler_uses_stderr(capsys, handler_cls: Type[logging.StreamHandler]) -> None:
+    handler = handler_cls()
+    logger = logging.Logger("test")
+    logger.addHandler(handler)
+
+    env_logger._log_samples(logger)
+
+    captured = capsys.readouterr()
+    assert captured.err and not captured.out

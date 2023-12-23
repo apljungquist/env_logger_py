@@ -133,3 +133,10 @@ class SparseColorHandler(logging.StreamHandler):
         if fmt is not None:
             fmt = SparseColorFormatter(fmt=fmt._fmt)
         super().setFormatter(fmt)
+
+
+def RichHandler(*args, **kwargs) -> logging.Handler:
+    import rich.logging  # type: ignore
+
+    kwargs.setdefault("console", rich.console.Console(stderr=True))
+    return rich.logging.RichHandler(*args, **kwargs)
