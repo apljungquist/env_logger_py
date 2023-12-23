@@ -62,9 +62,7 @@ def _valid_handlers(text: Optional[str]) -> Optional[List[logging.Handler]]:
         return None
     if text == "rich":
         try:
-            import rich.logging  # type: ignore
-
-            return [rich.logging.RichHandler()]
+            return [_handlers.RichHandler()]
         except ImportError as e:
             raise ValueError(
                 f"Invalid log handler: {text} (install rich to enable this handler)"
